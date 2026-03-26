@@ -121,7 +121,7 @@ void generateQuestion(){
         // ASSIGN TO LINKED QUESTION
     }
 
-    int pts;
+    double pts;
     cout << "Enter point value: ";
     cin >> pts;
     while(pts < 0){

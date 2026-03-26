@@ -13,7 +13,7 @@ struct LinkedQuestion{
     std::string questionContent;
     QuestionType questionType;
     LinkedQuestion *nextQuestion;
-    int pointValue;
+    double pointValue;
 
     // Not implemented
     struct LinkedAnswer{
