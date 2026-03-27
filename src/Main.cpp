@@ -189,4 +189,5 @@ void buildMCQAnswers(LinkedQuestion *q){
     // iterate up list until found
     
     // we might want to limit the questions to 26 so we don't go higher than z
+    cout << endl;
 }
