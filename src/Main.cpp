@@ -52,8 +52,6 @@ int main() {
         }
         cin.ignore(1000, '\n');
     }
-    // Phase 2 in pdf shows a "what do u want to do here" menu
-
 
     return 0;
 }
@@ -154,6 +152,27 @@ void generateQuestion(){
     }
 
     node->nextQuestion = q;
+}
+
+void editQuestion(){
+    int input;
+    cout << "Type a number to edit, or type quit(): ";
+    cin >> input;
+    while(input > 0 && input <= numQuestions){
+        for(int i = 0; i < input; ++i){
+            //navigate to node, edit it
+        }
+    }
+}
+void deleteQuestion(){
+    int input;
+    cout << "Type a number to delete [1-" << numQuestions << "]: ";
+    cin >> input;
+    while(input > 0 && input <= numQuestions){
+        for(int i = 0; i < input; ++i){
+            //navigate to node, edit it
+        }
+    }
 }
 
 void buildMCQAnswers(LinkedQuestion *q){
