@@ -18,6 +18,7 @@ void showGreeting();
 void generateQuestion();
 void editQuestion(){}
 void deleteQuestion(){}
+void buildMCQAnswers(LinkedQuestion *q);
 void invalidInput(){cout << "[Command not recognized, please try again!]\n\n";}
 // Note there is one other error message used in pdf/outline
 
@@ -89,10 +90,8 @@ void generateQuestion(){
     if(qType == "mcq"){
         q->questionType = LinkedQuestion::MCQ;
         
-        cout << "[At any time, type 'quit()' to exit]\n\n";
-        // Not yet implemented 
-        // if "quit()" is the question you quit displaying
-
+        buildMCQAnswers(q);
+        // Need loop to select a correct answer.
     }
     else if(qType == "tf"){
         q->questionType = LinkedQuestion::TFQ;
@@ -108,6 +107,11 @@ void generateQuestion(){
             cin.ignore(1000, '\n');
         }
 
+        if(tOrF == "true"){
+            q->isTrue = true;
+        } else {
+            q->isTrue = false;
+        }
         // ASSIGN TO LINKED QUESTION
     }
     else if(qType == "wr"){
@@ -116,6 +120,7 @@ void generateQuestion(){
         cout << "Select correct answer: ";
         cin >> qAns;
         cin.ignore(1000, '\n');
+        q->targetWord = qAns;
         // not sure if theres anything that needs to be checked here.
         
         // ASSIGN TO LINKED QUESTION
@@ -149,4 +154,39 @@ void generateQuestion(){
     }
 
     node->nextQuestion = q;
+}
+
+void buildMCQAnswers(LinkedQuestion *q){
+    q->lastAnswer = nullptr;
+    cout << "[At any time, type 'quit()' to exit]\n\n";
+    string userInput;
+    char currLetter = 'A';
+    cout << "Enter choice " << currLetter << ": ";
+    cin >> userInput;
+    while(userInput != "quit()"){
+        // Add to node
+        LinkedQuestion::LinkedAnswer *ansChoice = new LinkedQuestion::LinkedAnswer();
+        ansChoice->letter = currLetter;
+        ansChoice->answerContent = userInput;
+        if(q->lastAnswer == nullptr){
+            ansChoice->prevChoice = nullptr;
+            q->lastAnswer = ansChoice;
+        } else {
+            ansChoice->prevChoice = q->lastAnswer;
+            q->lastAnswer = ansChoice;
+        }
+
+        cin.ignore(1000, '\n');
+        ++currLetter;
+        cout << "Enter choice " << currLetter << ": ";
+        cin >> userInput;
+    }
+
+    // NEED LOOP TO FIND CHAR OF CORRECT ANSWER,
+    // CURRENTLY JUST BUILDS LINKED LIST - NO CORRECT
+
+    // get target character
+    // iterate up list until found
+    
+    // we might want to limit the questions to 26 so we don't go higher than z
 }

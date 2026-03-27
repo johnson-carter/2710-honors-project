@@ -2,6 +2,15 @@
 #include <string>
 
 struct LinkedQuestion{
+    
+    struct LinkedAnswer{
+        char letter;
+        std::string answerContent;
+        bool correctAnswer;
+        LinkedAnswer *prevChoice;
+    };
+    bool isTrue;
+    std::string targetWord;
     /*
         BIG QUESTION:
         Should every question have every answer type?
@@ -20,13 +29,13 @@ struct LinkedQuestion{
     std::string questionContent;
     QuestionType questionType;
     LinkedQuestion *nextQuestion;
+    LinkedAnswer *lastAnswer;
     double pointValue;
 
     // Not implemented
-    struct LinkedAnswer{
-        char letter;
-        std::string answerContent;
-        bool correctAnswer;
-        LinkedAnswer *nextChoice;
-    };
+    
+
+    void generateAnswer(){
+
+    }
 };
