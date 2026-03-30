@@ -154,25 +154,65 @@ void generateQuestion(){
     node->nextQuestion = q;
 }
 
+
+// NOTE - nothing in edit/delete functions is set for handling an empty list of questions !
+// Should add this later
 void editQuestion(){
     int input;
     cout << "Type a number to edit, or type quit(): ";
     cin >> input;
-    while(input > 0 && input <= numQuestions){
-        for(int i = 0; i < input; ++i){
-            //navigate to node, edit it
-        }
+    while(input < 1 || input > numQuestions){
+        invalidInput();
+        cin.ignore(1000, '\n');
+        invalidInput();
+        cout << "Type a number to edit, or type quit(): ";
+        cin >> input;
     }
+    LinkedQuestion *qTarget = firstQuestion;
+    for(int i = 1; i < input; ++i){
+        qTarget = qTarget->nextQuestion;
+    }
+
+    cout << "=======================\n";
+    cout << "=== Q" << input << "Saved Values ===\n";
+    cout << "=======================\n";
+    cout << "1. Type: " /*function here to return a string. q.getTypeString()? */;
+    cout << "2. Question: " << qTarget->questionContent << endl;
+    int nextLabel = 3;
+    if(qTarget->questionType == LinkedQuestion::MCQ){
+        cout << nextLabel << ". Answer Choices: \n";
+        ++nextLabel;
+        // loop through answer choices and display;
+    }
+    cout << nextLabel << ". Correct Answer: "; /* Also want to have a type-agnostic filter for answer(true/false/mcq/written)*/
+
+    // ADD LOGIC TO EDIT QUESTION PROPERTIES HERE
+    
 }
 void deleteQuestion(){
     int input;
     cout << "Type a number to delete [1-" << numQuestions << "]: ";
     cin >> input;
-    while(input > 0 && input <= numQuestions){
-        for(int i = 0; i < input; ++i){
-            //navigate to node, edit it
-        }
+    while(input < 1 || input > numQuestions){
+        invalidInput();
+        cin.ignore(1000, '\n');
+        invalidInput();
+        cout << "Type a number to delete [1-" << numQuestions << "]: ";
+        cin >> input;
     }
+    // input is good:
+    LinkedQuestion *q;
+    q = firstQuestion;
+    // example, remove q3. Get q1 + 1
+    for(int i = 1; i < (input - 1); ++i){
+        // i = 1, q = head. i = 2, q = head + 1.
+        q = q->nextQuestion;    
+    }
+    LinkedQuestion *qRemove = q->nextQuestion;
+    // should be pointing to question before removed target
+    q->nextQuestion = q->nextQuestion->nextQuestion;
+    delete qRemove;
+    // NEED TO TEST THIS FUNCTION - NOT SURE IF IM TRIPPING OR IF LOGIC IS SOUND
 }
 
 void buildMCQAnswers(LinkedQuestion *q){
