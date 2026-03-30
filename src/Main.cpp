@@ -16,8 +16,8 @@ using namespace std;
 // Function declarations:
 void showGreeting();
 void generateQuestion();
-void editQuestion(){}
-void deleteQuestion(){}
+void editQuestion();
+void deleteQuestion();
 void buildMCQAnswers(LinkedQuestion *q);
 void invalidInput(){cout << "[Command not recognized, please try again!]\n\n";}
 // Note there is one other error message used in pdf/outline
@@ -176,16 +176,30 @@ void editQuestion(){
     cout << "=======================\n";
     cout << "=== Q" << input << "Saved Values ===\n";
     cout << "=======================\n";
-    cout << "1. Type: " /*function here to return a string. q.getTypeString()? */;
+    cout << "1. Type: " << qTarget->getTypeString() << endl;
     cout << "2. Question: " << qTarget->questionContent << endl;
     int nextLabel = 3;
+    //
+    // Alternate idea : add a getCorrectAnswer() function to linkedQuestion to simplify this logic.
+    //
     if(qTarget->questionType == LinkedQuestion::MCQ){
         cout << nextLabel << ". Answer Choices: \n";
         ++nextLabel;
-        // loop through answer choices and display;
+        LinkedQuestion::LinkedAnswer *ansChoices = qTarget->lastAnswer;
+        char targetChar;
+        while(ansChoices != nullptr){
+            cout << ansChoices->letter << ". " << ansChoices->answerContent << endl;
+            if(ansChoices->correctAnswer == true)targetChar = ansChoices->letter;
+            ansChoices = ansChoices->prevChoice;
+        }    
+        ++nextLabel;
+        cout << nextLabel << ". Correct Answer: " << targetChar;
+    } else if(qTarget->questionType == LinkedQuestion::TFQ){
+        cout << nextLabel << ". Correct Answer: " << qTarget->isTrue;
+    } else{
+        cout << nextLabel << ". Correct Answer: " <<  qTarget->targetWord;
     }
-    cout << nextLabel << ". Correct Answer: "; /* Also want to have a type-agnostic filter for answer(true/false/mcq/written)*/
-
+    cout << endl;
     // ADD LOGIC TO EDIT QUESTION PROPERTIES HERE
     
 }

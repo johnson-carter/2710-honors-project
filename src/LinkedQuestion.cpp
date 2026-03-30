@@ -35,7 +35,20 @@ struct LinkedQuestion{
     // Not implemented
     
 
-    void generateAnswer(){
-
+    std::string getTypeString(){
+        switch(questionType){
+            case MCQ:
+                return "mcq";
+                break;
+            case TFQ:
+                return "t/f";
+                break;
+            case WRQ:
+                return "wr";
+                break;
+            default: 
+                return "null";
+                break;
+        }
     }
 };
