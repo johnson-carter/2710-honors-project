@@ -10,7 +10,8 @@
 
 #include <iostream>
 #include <string>
-#include "LinkedQuestion.cpp"
+#include "LinkedQuestion.h"
+#include "TestSession.cpp"
 
 using namespace std;
 
@@ -59,7 +60,13 @@ int main() {
                 invalidInput();
                 break;
         }
+        if(menuOption == 4) break;
     }
+
+    TestSession session(firstQuestion);
+    session.startQuiz();
+
+    cout << "\n*** Thank you for using the testing service. Goodbye! ***\n";
 
     return 0;
 }
