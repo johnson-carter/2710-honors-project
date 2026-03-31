@@ -31,11 +31,19 @@ int main() {
     showGreeting();
 
     while(true){
-        int menuOption;
         cout << "Do you want to?\n\t1. Create new question.\n\t2. Edit question.\n\t3. Delete question.\n\t4. Finish\n";
         cout << "Select an action: ";
-        cin >> menuOption;
-        switch(menuOption){
+        string line;
+        int menuOption = -1;
+
+        getline(cin, line);
+        try {
+            menuOption = stoi(line);
+        } catch (...) {
+            menuOption = -1;
+        }
+
+        switch(menuOption) {
             case 1:
                 generateQuestion();
                 break;
@@ -51,7 +59,6 @@ int main() {
                 invalidInput();
                 break;
         }
-        cin.ignore(1000, '\n');
     }
 
     return 0;
@@ -71,18 +78,18 @@ void generateQuestion(){
     
     cout << "\n=== QUESTION " << numQuestions << " ===\n";
     cout << "Type of question [mcq/tf/wr]: ";
-    cin >> qType;
-    // String arent allowed in switch statments.
-    while(qType != "mcq" && qType != "tf" && qType != "wr"){
-        invalidInput();
+    string line;
+    getline(cin, line);
+    qType = line;
 
+    while (qType != "mcq" && qType != "tf" && qType != "wr") {
+        invalidInput();
         cout << "Type of question [mcq/tf/wr]: ";
-        cin.ignore(1000, '\n');
-        cin >> qType;
+
+        getline(cin, qType);
     }
     cout << "\nEnter a question: ";
     getline(cin, qContent);
-    cin.ignore(1000, '\n');
     cout << endl; 
     // Is there anything that makes a question invalid?
     // I don't really know of any case where we cant accept it
@@ -97,13 +104,15 @@ void generateQuestion(){
         
         cout << "Select correct answer: ";
         string tOrF;
+        string line;
+        getline(cin, line);
+        tOrF = line;
 
-        cin >> tOrF;
-        while(tOrF != "true" && tOrF != "false"){
+        while (tOrF != "true" && tOrF != "false") {
             invalidInput();
             cout << "Select correct answer: ";
-            cin >> tOrF;
-            cin.ignore(1000, '\n');
+
+            getline(cin, tOrF);
         }
 
         if(tOrF == "true"){
@@ -117,22 +126,23 @@ void generateQuestion(){
         string qAns;
         q->questionType = LinkedQuestion::WRQ;
         cout << "Select correct answer: ";
-        cin >> qAns;
-        cin.ignore(1000, '\n');
+        getline(cin, qAns);
         q->targetWord = qAns;
         // not sure if theres anything that needs to be checked here.
         
         // ASSIGN TO LINKED QUESTION
     }
 
+    string ptsStr;
     double pts;
     cout << "Enter point value: ";
-    cin >> pts;
+    getline(cin, ptsStr);
+    pts = stod(ptsStr);
     while(pts < 0){
         invalidInput();
-        cin.ignore(1000, '\n');
         cout << "Enter point value: ";
-        cin >> pts;
+        getline(cin, ptsStr);
+        pts = stod(ptsStr);
     }
     q->pointValue = pts;
 
@@ -160,15 +170,27 @@ void generateQuestion(){
 // Should add this later
 void editQuestion(){
     int input;
+    string inputStr;
     cout << "Type a number to edit, or type quit(): ";
-    cin >> input;
-    while(input < 1 || input > numQuestions){
-        invalidInput();
-        cin.ignore(1000, '\n');
+
+    while (input < 1 || input > numQuestions) {
         invalidInput();
         cout << "Type a number to edit, or type quit(): ";
-        cin >> input;
+
+        string line;
+        getline(cin, line);
+
+        if (line == "quit()") {
+            break;
+        }
+
+        try {
+            input = stoi(line);
+        } catch (...) {
+            invalidInput();
+        }
     }
+    
     LinkedQuestion *qTarget = firstQuestion;
     for(int i = 1; i < input; ++i){
         qTarget = qTarget->nextQuestion;
@@ -189,7 +211,7 @@ void editQuestion(){
         LinkedQuestion::LinkedAnswer *ansChoices = qTarget->lastAnswer;
         char targetChar;
         while(ansChoices != nullptr){
-            cout << ansChoices->letter << ". " << ansChoices->answerContent << endl;
+            cout << "\t" << ansChoices->letter << ". " << ansChoices->answerContent << endl;
             if(ansChoices->correctAnswer == true)targetChar = ansChoices->letter;
             ansChoices = ansChoices->prevChoice;
         }    
@@ -214,13 +236,26 @@ void deleteQuestion(){
     
     int input;
     cout << "Type a number to delete [1-" << numQuestions << "]: ";
-    cin >> input;
-    while(cin.fail() || input < 1 || input > numQuestions){
-        cin.clear();
-        cin.ignore(1000, '\n');
+    string line;
+    getline(cin, line);
+
+    try {
+        input = stoi(line);
+    } catch (...) {
+        input = -1; // force invalid to enter loop
+    }
+
+    while (input < 1 || input > numQuestions) {
         invalidInput();
         cout << "Type a number to delete [1-" << numQuestions << "]: ";
-        cin >> input;
+
+        getline(cin, line);
+
+        try {
+            input = stoi(line);
+        } catch (...) {
+            input = -1;
+        }
     }
     // input is good:
     LinkedQuestion *qRemove = nullptr;
@@ -259,8 +294,6 @@ void buildMCQAnswers(LinkedQuestion *q){
     cout << "[At any time, type 'quit()' to exit]\n\n";
     string userInput;
     char currLetter = 'A';
-
-    cin.ignore(1000, '\n');
     
     while(true){
         cout << "Enter choice " << currLetter << ": ";
@@ -278,9 +311,9 @@ void buildMCQAnswers(LinkedQuestion *q){
         currLetter++;
     }
     cout << "Which letter is the correct answer? ";
-    char correct;
-    cin >> correct;
-    correct = toupper(correct);
+        string line;
+    getline(cin, line);
+    char correct = toupper(line[0]);
 
     LinkedQuestion::LinkedAnswer *temp = q->lastAnswer;
     while (temp != nullptr) {
