@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include "LinkedQuestion.cpp"
+
 using namespace std;
 
 // Function declarations:
@@ -199,7 +200,7 @@ void editQuestion(){
     } else{
         cout << nextLabel << ". Correct Answer: " <<  qTarget->targetWord;
     }
-    cout << endl;
+    cout << endl << endl;
     // ADD LOGIC TO EDIT QUESTION PROPERTIES HERE
     
 }
@@ -287,14 +288,4 @@ void buildMCQAnswers(LinkedQuestion *q){
         }
         temp = temp->prevChoice;
     }
-}
-
-    // NEED LOOP TO FIND CHAR OF CORRECT ANSWER,
-    // CURRENTLY JUST BUILDS LINKED LIST - NO CORRECT
-
-    // get target character
-    // iterate up list until found
-    
-    // we might want to limit the questions to 26 so we don't go higher than z
-    cout << endl;
 }
