@@ -33,12 +33,12 @@ int main() {
     while(true){
         cout << "Do you want to?\n\t1. Create new question.\n\t2. Edit question.\n\t3. Delete question.\n\t4. Finish\n";
         cout << "Select an action: ";
-        string line;
+        string optionStr;
         int menuOption = -1;
 
-        getline(cin, line);
+        getline(cin, optionStr);
         try {
-            menuOption = stoi(line);
+            menuOption = stoi(optionStr);
         } catch (...) {
             menuOption = -1;
         }
@@ -78,9 +78,9 @@ void generateQuestion(){
     
     cout << "\n=== QUESTION " << numQuestions << " ===\n";
     cout << "Type of question [mcq/tf/wr]: ";
-    string line;
-    getline(cin, line);
-    qType = line;
+    string qTypeStr;
+    getline(cin, qTypeStr);
+    qType = qTypeStr;
 
     while (qType != "mcq" && qType != "tf" && qType != "wr") {
         invalidInput();
@@ -90,6 +90,8 @@ void generateQuestion(){
     }
     cout << "\nEnter a question: ";
     getline(cin, qContent);
+    q->questionContent = qContent;
+    
     cout << endl; 
     // Is there anything that makes a question invalid?
     // I don't really know of any case where we cant accept it
@@ -104,9 +106,9 @@ void generateQuestion(){
         
         cout << "Select correct answer: ";
         string tOrF;
-        string line;
-        getline(cin, line);
-        tOrF = line;
+        string tfStr;
+        getline(cin, tfStr);
+        tOrF = tfStr;
 
         while (tOrF != "true" && tOrF != "false") {
             invalidInput();
@@ -177,15 +179,15 @@ void editQuestion(){
         invalidInput();
         cout << "Type a number to edit, or type quit(): ";
 
-        string line;
-        getline(cin, line);
+        string inputStr;
+        getline(cin, inputStr);
 
-        if (line == "quit()") {
+        if (inputStr == "quit()") {
             break;
         }
 
         try {
-            input = stoi(line);
+            input = stoi(inputStr);
         } catch (...) {
             invalidInput();
         }
@@ -236,11 +238,11 @@ void deleteQuestion(){
     
     int input;
     cout << "Type a number to delete [1-" << numQuestions << "]: ";
-    string line;
-    getline(cin, line);
+    string inputNumStr;
+    getline(cin, inputNumStr);
 
     try {
-        input = stoi(line);
+        input = stoi(inputNumStr);
     } catch (...) {
         input = -1; // force invalid to enter loop
     }
@@ -249,10 +251,10 @@ void deleteQuestion(){
         invalidInput();
         cout << "Type a number to delete [1-" << numQuestions << "]: ";
 
-        getline(cin, line);
+        getline(cin, inputNumStr);
 
         try {
-            input = stoi(line);
+            input = stoi(inputNumStr);
         } catch (...) {
             input = -1;
         }
@@ -311,9 +313,9 @@ void buildMCQAnswers(LinkedQuestion *q){
         currLetter++;
     }
     cout << "Which letter is the correct answer? ";
-        string line;
-    getline(cin, line);
-    char correct = toupper(line[0]);
+    string correctStr;
+    getline(cin, correctStr);
+    char correct = toupper(correctStr[0]);
 
     LinkedQuestion::LinkedAnswer *temp = q->lastAnswer;
     while (temp != nullptr) {
