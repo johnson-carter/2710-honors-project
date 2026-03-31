@@ -200,6 +200,8 @@ void editQuestion(){
     } else{
         cout << nextLabel << ". Correct Answer: " <<  qTarget->targetWord;
     }
+    ++nextLabel;
+    cout << endl << nextLabel << ". Point Value: " << qTarget->pointValue;
     cout << endl << endl;
     // ADD LOGIC TO EDIT QUESTION PROPERTIES HERE
     
