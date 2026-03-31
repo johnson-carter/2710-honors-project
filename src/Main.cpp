@@ -1,7 +1,7 @@
 // Main.cpp
 // Honors Project - COMP 2710
 //
-// Carter Johnson
+// Carter Johnson, Natalie Nguyen
 //  
 // To compile (from ~/honors_project/): g++ src/Main.cpp
 // To run: ./a.out
@@ -80,7 +80,7 @@ void generateQuestion(){
         cin >> qType;
     }
     cout << "\nEnter a question: ";
-    cin >> qContent;
+    getline(cin, qContent);
     cin.ignore(1000, '\n');
     cout << endl; 
     // Is there anything that makes a question invalid?
@@ -204,29 +204,51 @@ void editQuestion(){
     
 }
 void deleteQuestion(){
+    if (numQuestions == 0) {
+        cout << "No questions to delete.\n";
+        return;
+    }
+    
     int input;
     cout << "Type a number to delete [1-" << numQuestions << "]: ";
     cin >> input;
-    while(input < 1 || input > numQuestions){
-        invalidInput();
+    while(cin.fail() || input < 1 || input > numQuestions){
+        cin.clear();
         cin.ignore(1000, '\n');
         invalidInput();
         cout << "Type a number to delete [1-" << numQuestions << "]: ";
         cin >> input;
     }
     // input is good:
-    LinkedQuestion *q;
-    q = firstQuestion;
-    // example, remove q3. Get q1 + 1
-    for(int i = 1; i < (input - 1); ++i){
-        // i = 1, q = head. i = 2, q = head + 1.
-        q = q->nextQuestion;    
+    LinkedQuestion *qRemove = nullptr;
+    
+    // Case 1: Deleting the very first question
+    if (input == 1) {
+        qRemove = firstQuestion;
+        firstQuestion = firstQuestion->nextQuestion;
     }
-    LinkedQuestion *qRemove = q->nextQuestion;
-    // should be pointing to question before removed target
-    q->nextQuestion = q->nextQuestion->nextQuestion;
+    // Case 2: Deleting any other question
+    else {
+        LinkedQuestion *prev = firstQuestion;
+        for (int i = 1; i < input - 1; i++) {
+            prev = prev->nextQuestion;
+        }
+        qRemove = prev->nextQuestion;
+        prev->nextQuestion = qRemove->nextQuestion;
+    }
+
+    if (qRemove->questionType == LinkedQuestion::MCQ) {
+        LinkedQuestion::LinkedAnswer *ans = qRemove->lastAnswer;
+        while (ans != nullptr) {
+            LinkedQuestion::LinkedAnswer *temp = ans;
+            ans = ans->prevChoice;
+            delete temp;
+        }
+    }
+
     delete qRemove;
-    // NEED TO TEST THIS FUNCTION - NOT SURE IF IM TRIPPING OR IF LOGIC IS SOUND
+    numQuestions--;
+    cout << "Question deleted successfully.\n\n";
 }
 
 void buildMCQAnswers(LinkedQuestion *q){
@@ -234,26 +256,38 @@ void buildMCQAnswers(LinkedQuestion *q){
     cout << "[At any time, type 'quit()' to exit]\n\n";
     string userInput;
     char currLetter = 'A';
-    cout << "Enter choice " << currLetter << ": ";
-    cin >> userInput;
-    while(userInput != "quit()"){
+
+    cin.ignore(1000, '\n');
+    
+    while(true){
+        cout << "Enter choice " << currLetter << ": ";
+        getline(cin, userInput);
+        if(userInput == "quit()") break;
         // Add to node
         LinkedQuestion::LinkedAnswer *ansChoice = new LinkedQuestion::LinkedAnswer();
         ansChoice->letter = currLetter;
         ansChoice->answerContent = userInput;
-        if(q->lastAnswer == nullptr){
-            ansChoice->prevChoice = nullptr;
-            q->lastAnswer = ansChoice;
-        } else {
-            ansChoice->prevChoice = q->lastAnswer;
-            q->lastAnswer = ansChoice;
-        }
+        ansChoice->correctAnswer = false;
+        
+        ansChoice->prevChoice = q->lastAnswer;
+        q->lastAnswer = ansChoice;
 
-        cin.ignore(1000, '\n');
-        ++currLetter;
-        cout << "Enter choice " << currLetter << ": ";
-        cin >> userInput;
+        currLetter++;
     }
+    cout << "Which letter is the correct answer? ";
+    char correct;
+    cin >> correct;
+    correct = toupper(correct);
+
+    LinkedQuestion::LinkedAnswer *temp = q->lastAnswer;
+    while (temp != nullptr) {
+        if (temp->letter == correct) {
+            temp->correctAnswer = true;
+            q->correctLetter = correct;
+        }
+        temp = temp->prevChoice;
+    }
+}
 
     // NEED LOOP TO FIND CHAR OF CORRECT ANSWER,
     // CURRENTLY JUST BUILDS LINKED LIST - NO CORRECT
