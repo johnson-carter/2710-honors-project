@@ -175,7 +175,7 @@ void editQuestion(){
     }
 
     cout << "=======================\n";
-    cout << "=== Q" << input << "Saved Values ===\n";
+    cout << "=== Q" << input << " Saved Values ===\n";
     cout << "=======================\n";
     cout << "1. Type: " << qTarget->getTypeString() << endl;
     cout << "2. Question: " << qTarget->questionContent << endl;
