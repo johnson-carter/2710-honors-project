@@ -7,10 +7,11 @@ struct LinkedQuestion{
         char letter;
         std::string answerContent;
         bool correctAnswer;
-        LinkedAnswer *prevChoice;
+        LinkedAnswer *prevChoice = nullptr;
     };
     bool isTrue;
     std::string targetWord;
+    char correctLetter;
     /*
         BIG QUESTION:
         Should every question have every answer type?
@@ -28,11 +29,13 @@ struct LinkedQuestion{
     // Question parameters
     std::string questionContent;
     QuestionType questionType;
-    LinkedQuestion *nextQuestion;
-    LinkedAnswer *lastAnswer;
+    LinkedQuestion *nextQuestion = nullptr;
+    LinkedAnswer *lastAnswer = nullptr;
     double pointValue;
 
-    // Not implemented
+    // Student Assessment Progress
+    bool isAnswered = false;
+    std::string studentAnswer;
     
 
     std::string getTypeString(){
