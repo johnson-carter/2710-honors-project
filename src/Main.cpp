@@ -17,6 +17,7 @@ using namespace std;
 
 // Function declarations:
 void showGreeting();
+void quizSetup();
 void generateQuestion();
 void editQuestion();
 void deleteQuestion();
@@ -30,7 +31,24 @@ int numQuestions = 0;
 
 int main() {
     showGreeting();
+    // Configure quiz questions
+    quizSetup();
+    
+    // Generate test
+    TestSession session(firstQuestion);
+    session.startQuiz();
 
+    cout << "\n*** Thank you for using the testing service. Goodbye! ***\n";
+
+    return 0;
+}
+
+
+void showGreeting(){
+    cout << "*** Welcome to the Honors' Testing Service ***\n\n";
+}
+
+void quizSetup(){
     while(true){
         cout << "Do you want to?\n\t1. Create new question.\n\t2. Edit question.\n\t3. Delete question.\n\t4. Finish\n";
         cout << "Select an action: ";
@@ -63,19 +81,16 @@ int main() {
         if(menuOption == 4) break;
     }
 
-    TestSession session(firstQuestion);
-    session.startQuiz();
-
-    cout << "\n*** Thank you for using the testing service. Goodbye! ***\n";
-
-    return 0;
+    while(true){
+        cout << "[!] Begin Assessment? [y/n]: ";
+        string userInputStr;
+        getline(cin, userInputStr);
+        if(userInputStr == "y") break;
+        else if(userInputStr == "n"){
+            cout << "\nAssessment cancelled. Goodbye!\n";
+            exit(0);}
+    }
 }
-
-
-void showGreeting(){
-    cout << "*** Welcome to the Honors' Testing Service ***\n\n";
-}
-
 void generateQuestion(){
     ++numQuestions;
 

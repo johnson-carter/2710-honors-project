@@ -120,6 +120,10 @@ struct TestSession{
     }
 
     void startQuiz(){
+        // This is a linear execution, 1->2->......
+        // Project manual shows action menu letting users progress 1->2->n while also jumping to input #
+        // Implementation needed here 
+
         while(testQuestion != nullptr){
             ++totalQuestions;
             totalPoints += testQuestion->pointValue;
@@ -133,6 +137,7 @@ struct TestSession{
 
             testQuestion = testQuestion->nextQuestion;
         }
+
         printSessionResults();
     }
 };
