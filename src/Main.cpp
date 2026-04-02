@@ -308,11 +308,14 @@ void buildMCQAnswers(LinkedQuestion *q){
     cout << "[At any time, type 'quit()' to exit]\n\n";
     string userInput;
     char currLetter = 'A';
-    
     while(true){
         cout << "Enter choice " << currLetter << ": ";
         getline(cin, userInput);
-        if(userInput == "quit()") break;
+        if(userInput == "quit()" && currLetter != 'A') break;
+        else if(userInput == "quit()") {
+            cout << "You must enter at least one answer choice.\n";
+            continue;
+        }
         // Add to node
         LinkedQuestion::LinkedAnswer *ansChoice = new LinkedQuestion::LinkedAnswer();
         ansChoice->letter = currLetter;
@@ -321,14 +324,18 @@ void buildMCQAnswers(LinkedQuestion *q){
         
         ansChoice->prevChoice = q->lastAnswer;
         q->lastAnswer = ansChoice;
-
         currLetter++;
     }
-    cout << "Which letter is the correct answer? ";
+    cout << "Which letter is the correct answer: ";
     string correctStr;
-    getline(cin, correctStr);
-    char correct = toupper(correctStr[0]);
-
+    char correct;
+    while(true){
+        getline(cin, correctStr);
+        correct = toupper(correctStr[0]);
+        if(correct >= 'A' && correct <= currLetter - 1) break;
+        invalidInput();
+        cout << "Which letter is the correct answer: ";    
+    }
     LinkedQuestion::LinkedAnswer *temp = q->lastAnswer;
     while (temp != nullptr) {
         if (temp->letter == correct) {
