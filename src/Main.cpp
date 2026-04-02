@@ -31,9 +31,10 @@ int numQuestions = 0;
 
 int main() {
     showGreeting();
-
+    // Configure quiz questions
     quizSetup();
     
+    // Generate test
     TestSession session(firstQuestion);
     session.startQuiz();
 
@@ -80,6 +81,15 @@ void quizSetup(){
         if(menuOption == 4) break;
     }
 
+    while(true){
+        cout << "[!] Begin Assessment? [y/n]: ";
+        string userInputStr;
+        getline(cin, userInputStr);
+        if(userInputStr == "y") break;
+        else if(userInputStr == "n"){
+            cout << "\nAssessment cancelled. Goodbye!\n";
+            exit(0);}
+    }
 }
 void generateQuestion(){
     ++numQuestions;
