@@ -143,15 +143,20 @@ void generateQuestion(){
     }
 
     string ptsStr;
-    double pts;
-    cout << "Enter point value: ";
-    getline(cin, ptsStr);
-    pts = stod(ptsStr);
+    double pts = -1;
     while(pts < 0){
-        invalidInput();
         cout << "Enter point value: ";
         getline(cin, ptsStr);
-        pts = stod(ptsStr);
+        try
+        {
+            pts = stod(ptsStr);
+        }
+        catch(const std::exception& e)
+        {
+            invalidInput();
+            pts = -1;
+        }
+        if(pts < 0)invalidInput();
     }
     q->pointValue = pts;
 
