@@ -54,4 +54,20 @@ struct LinkedQuestion{
                 break;
         }
     }
+    std::string getAnswerString(){
+        switch(questionType){
+            case MCQ:
+                return std::string(1, correctLetter);
+                break;
+            case TFQ:
+                return isTrue ? "true" : "false";
+                break;
+            case WRQ:
+                return targetWord;
+                break;
+            default: 
+                return "null";
+                break;
+        }
+    }
 };

@@ -1,3 +1,0 @@
-point value assignment:
-- stod will work if numbers preceed other symbols. Will parse until double ends
-1

@@ -1,13 +1,8 @@
 #include "LinkedQuestion.h"
+
 using namespace std;
 
 struct TestSession{
-    // Methods
-    /*bool askQuestion();
-    char getMCQAnswer();
-    bool getTFAnswer();
-    string getWRAnswer();
-    void printSessionResults();*/
 
     // Fields
     LinkedQuestion* head;
@@ -46,7 +41,7 @@ struct TestSession{
     }
     void processCurrentQuestion(int index) {
         if (testQuestion->isAnswered) {
-            cout << "Question " << targetNum << ": " << testQuestion->questionContent << endl;
+            cout << "Question " << index << ": " << testQuestion->questionContent << endl;
             cout << "You answered: " << testQuestion->studentAnswer << endl;
                 
             cout << "\nDo you want to?\n";
@@ -69,7 +64,7 @@ struct TestSession{
             }
         }
         else {
-            cout << "\nQuestion " << index << ": " << testQuestion->questionText << endl;
+            cout << "\nQuestion " << index << ": " << testQuestion->questionContent << endl;
             askForNewAnswer();
         }
     }
@@ -113,12 +108,14 @@ struct TestSession{
         int count = 1;
 
         while (curr != nullptr) {
-            bool isCorrect = compareAnswers(curr->studentAnswer, curr->correctAnswer);
+            // CHEcK THIS HERE
+            bool isCorrect = compareAnswers(curr->studentAnswer, curr->getAnswerString());
             if (isCorrect) {
-                earnedPoints += curr->points;
+                earnedPoints += curr->pointValue;
                 correctQuestions++;
             }
-            cout << "Question " << count << ": " << curr->correctAnswer << endl;
+
+            cout << "Question " << count << ": " << curr->getAnswerString() << endl;
             cout << "Your answer: " << curr->studentAnswer << endl;
             curr = curr->nextQuestion;
             count++;
@@ -126,7 +123,6 @@ struct TestSession{
 
         cout << "\nCorrect answers: " << correctQuestions << "/" << totalQuestions << endl;
         cout << "Final score: " << earnedPoints << "/" << totalPoints << endl;
-        cout << "*** Thank you for using the testing service. Goodbye! ***\n";
     }
     bool compareAnswers(string s1, string s2) {
         if (s1.length() != s2.length()) {
@@ -225,14 +221,6 @@ struct TestSession{
             }
         }
         return isCorrect;
-    }
-
-    
-
-    void printSessionResults(){
-        cout << "\n=== SESSION LOG ===\n";
-        cout << "Correct answers: " << correctQuestions << "/" << totalQuestions << endl;
-        cout << "Final score: " << earnedPoints << "/" << totalPoints << endl;
     }
 
     void startQuiz(){
