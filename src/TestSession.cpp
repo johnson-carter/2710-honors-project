@@ -75,6 +75,7 @@ struct TestSession{
     }
     void moveToNextUnanswered() {
         LinkedQuestion* search = testQuestion->nextQuestion;
+        // look forward from current spot
         while (search != nullptr) {
             if (!search->isAnswered) {
                 testQuestion = search;
@@ -82,6 +83,7 @@ struct TestSession{
             }
             search = search->nextQuestion;
         }
+        // wrap back to the beginning
         search = head;
         while (search != testQuestion && search != nullptr) {
             if (!search->isAnswered) {
@@ -188,10 +190,10 @@ struct TestSession{
             //////
             case LinkedQuestion::MCQ:{
                 cout << "Answer Choices: \n";
-                LinkedQuestion::LinkedAnswer *ansChoices = testQuestion->lastAnswer;
+                LinkedQuestion::LinkedAnswer *ansChoices = testQuestion->firstAnswer;
                 while(ansChoices != nullptr){
                     cout << "\t" << ansChoices->letter << ". " << ansChoices->answerContent << endl;
-                    ansChoices = ansChoices->prevChoice;
+                    ansChoices = ansChoices->nextChoice;
                 }
                 char userAnswer = getMCQAnswer();
                 if(userAnswer == testQuestion->correctLetter){
@@ -223,23 +225,23 @@ struct TestSession{
         return isCorrect;
     }
 
-    void startQuiz(){
-        // This is a linear execution, 1->2->......
-        // Project manual shows action menu letting users progress 1->2->n while also jumping to input #
-        // Implementation needed here 
+    void startQuiz() {
+        if (head == nullptr) {
+            cout << "No questions available to take.\n";
+            return;
+        }
 
-        while(testQuestion != nullptr){
-            ++totalQuestions;
-            totalPoints += testQuestion->pointValue;
-            if(askQuestion()){
-                cout << "[Your answer is correct!]\n";
-                ++correctQuestions;
-                earnedPoints += testQuestion->pointValue;
-            } else{
-                cout << "[Your answer is incorrect!]\n";
+        int currentIdx = 1;
+        while (!isFinished) {
+            // Find the current index of testQuestion for display
+            LinkedQuestion* finder = head;
+            currentIdx = 1;
+            while (finder != testQuestion && finder != nullptr) {
+                finder = finder->nextQuestion;
+                currentIdx++;
             }
 
-            testQuestion = testQuestion->nextQuestion;
+            processCurrentQuestion(currentIdx);
         }
 
         printSessionResults();
