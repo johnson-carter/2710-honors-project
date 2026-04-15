@@ -29,6 +29,24 @@ void invalidInput(){cout << "[Command not recognized, please try again!]\n\n";}
 LinkedQuestion* firstQuestion = nullptr;
 int numQuestions = 0;
 
+void clearMemory(LinkedQuestion* head) {
+    LinkedQuestion* currentQ = head;
+    while (currentQ != nullptr) {
+        // Delete the nested Multiple Choice answers first
+        LinkedQuestion::LinkedAnswer* currentA = currentQ->firstAnswer;
+        while (currentA != nullptr) {
+            LinkedQuestion::LinkedAnswer* nextA = currentA->nextChoice;
+            delete currentA;
+            currentA = nextA;
+        }
+
+        // Save the next question, then delete the current one
+        LinkedQuestion* nextQ = currentQ->nextQuestion;
+        delete currentQ;
+        currentQ = nextQ;
+    }
+}
+
 int main() {
     showGreeting();
     // Configure quiz questions
@@ -37,6 +55,10 @@ int main() {
     // Generate test
     TestSession session(firstQuestion);
     session.startQuiz();
+
+    if (firstQuestion != nullptr) {
+        clearMemory(firstQuestion);
+    }
 
     cout << "\n*** Thank you for using the testing service. Goodbye! ***\n";
 
@@ -88,7 +110,10 @@ void quizSetup(){
         if(userInputStr == "y") break;
         else if(userInputStr == "n"){
             cout << "\nAssessment cancelled. Goodbye!\n";
-            exit(0);}
+            clearMemory(firstQuestion);
+            firstQuestion = nullptr;
+            return;
+        }
     }
 }
 void generateQuestion(){
@@ -237,12 +262,12 @@ void editQuestion(){
     if(qTarget->questionType == LinkedQuestion::MCQ){
         cout << nextLabel << ". Answer Choices: \n";
         ++nextLabel;
-        LinkedQuestion::LinkedAnswer *ansChoices = qTarget->lastAnswer;
-        char targetChar;
+        LinkedQuestion::LinkedAnswer *ansChoices = qTarget->firstAnswer;
+        char targetChar = ' ';
         while(ansChoices != nullptr){
             cout << "\t" << ansChoices->letter << ". " << ansChoices->answerContent << endl;
-            if(ansChoices->correctAnswer == true)targetChar = ansChoices->letter;
-            ansChoices = ansChoices->prevChoice;
+            if(ansChoices->correctAnswer == true) targetChar = ansChoices->letter;
+            ansChoices = ansChoices->nextChoice;
         }    
         ++nextLabel;
         cout << nextLabel << ". Correct Answer: " << targetChar;
@@ -305,10 +330,10 @@ void deleteQuestion(){
     }
 
     if (qRemove->questionType == LinkedQuestion::MCQ) {
-        LinkedQuestion::LinkedAnswer *ans = qRemove->lastAnswer;
+        LinkedQuestion::LinkedAnswer *ans = qRemove->firstAnswer;
         while (ans != nullptr) {
             LinkedQuestion::LinkedAnswer *temp = ans;
-            ans = ans->prevChoice;
+            ans = ans->nextChoice;
             delete temp;
         }
     }
@@ -318,45 +343,64 @@ void deleteQuestion(){
     cout << "Question deleted successfully.\n\n";
 }
 
-void buildMCQAnswers(LinkedQuestion *q){
-    q->lastAnswer = nullptr;
+void buildMCQAnswers(LinkedQuestion *q) {
+    q->firstAnswer = nullptr; // Initialize the head of the answer list
     cout << "[At any time, type 'quit()' to exit]\n\n";
     string userInput;
     char currLetter = 'A';
-    while(true){
+    
+    while(true) {
         cout << "Enter choice " << currLetter << ": ";
         getline(cin, userInput);
-        if(userInput == "quit()" && currLetter != 'A') break;
-        else if(userInput == "quit()") {
-            cout << "You must enter at least one answer choice.\n";
-            continue;
+        
+        if(userInput == "quit()") {
+            if(currLetter == 'A') {
+                cout << "You must enter at least one answer choice.\n";
+                continue;
+            } else break;
         }
-        // Add to node
+
+        // Create new node
         LinkedQuestion::LinkedAnswer *ansChoice = new LinkedQuestion::LinkedAnswer();
         ansChoice->letter = currLetter;
         ansChoice->answerContent = userInput;
         ansChoice->correctAnswer = false;
-        
-        ansChoice->prevChoice = q->lastAnswer;
-        q->lastAnswer = ansChoice;
+        ansChoice->nextChoice = nullptr;
+
+        // Link node to the END of the list (Maintains A-B-C order)
+        if(q->firstAnswer == nullptr) {
+            q->firstAnswer = ansChoice;
+        } else {
+            LinkedQuestion::LinkedAnswer *temp = q->firstAnswer;
+            while(temp->nextChoice != nullptr) {
+                temp = temp->nextChoice;
+            }
+            temp->nextChoice = ansChoice;
+        }
         currLetter++;
     }
+
+    // Select the correct answer
     cout << "Which letter is the correct answer: ";
     string correctStr;
     char correct;
-    while(true){
+    while(true) {
         getline(cin, correctStr);
-        correct = toupper(correctStr[0]);
-        if(correct >= 'A' && correct <= currLetter - 1) break;
+        if(!correctStr.empty()) {
+            correct = toupper(correctStr[0]);
+            if(correct >= 'A' && correct < currLetter) break;
+        }
         invalidInput();
         cout << "Which letter is the correct answer: ";    
     }
-    LinkedQuestion::LinkedAnswer *temp = q->lastAnswer;
+
+    // Mark the correct answer in the list
+    LinkedQuestion::LinkedAnswer *temp = q->firstAnswer;
     while (temp != nullptr) {
         if (temp->letter == correct) {
             temp->correctAnswer = true;
             q->correctLetter = correct;
         }
-        temp = temp->prevChoice;
+        temp = temp->nextChoice;
     }
 }
