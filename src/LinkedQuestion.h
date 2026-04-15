@@ -7,7 +7,7 @@ struct LinkedQuestion {
         char letter;
         std::string answerContent;
         bool correctAnswer;
-        LinkedAnswer* prevChoice = nullptr;
+        LinkedAnswer* nextChoice = nullptr;
     };
 
     bool isTrue = false;
@@ -23,7 +23,7 @@ struct LinkedQuestion {
     std::string questionContent;
     QuestionType questionType;
     LinkedQuestion* nextQuestion = nullptr;
-    LinkedAnswer* lastAnswer = nullptr;
+    LinkedAnswer* firstAnswer = nullptr;
     double pointValue = 0.0;
 
     bool isAnswered = false;
