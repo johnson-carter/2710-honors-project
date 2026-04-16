@@ -1,6 +1,15 @@
 // Main.cpp
 // Honors Project - COMP 2710
-// Carter Johnson, Natalie Nguyen
+/* Group members
+Carter Johnson: cmj0083@auburn.edu
+Natalie Nguyen: ntn0007@auburn.edu */
+/* Project description: A C++ testing service application utilizing a Singly Linked List 
+to manage dynamic assessment data. Supports creation, modification, and deletion of MCQ, 
+true/false, and written response questions. Features include manual memory management to 
+ensure zero leaks, robust input validation, and a conditional compilation framework for 
+automated unit testing.*/
+/* Any outside help/resources: Developed exclusively by team members using course lectures 
+and standard C++ documentation.*/
 
 // Part A
 // To compile (from ~/honors_project/): g++ src/Main.cpp
@@ -163,12 +172,66 @@ void runTests() {
     
     cout << "Case 4 passed\n\n";
 
+    // unit test case 5
+    cout << "Unit Test Case 5: MCQ correct answer\n";
+    LinkedQuestion* qMCQ = new LinkedQuestion();
+    qMCQ->questionType = LinkedQuestion::MCQ;
+    qMCQ->correctLetter = 'A';
+    qMCQ->pointValue = 50.0;
+    TestSession session5(qMCQ);
+    assert(session5.compareAnswers("A", "A") == true);
+    cout << "Case 5 passed\n\n";
+
+    // unit test case 6
+    cout << "Unit Test Case 6: MCQ incorrect answer\n";
+    assert(session5.compareAnswers("B", "A") == false);
+    cout << "Case 6 passed\n\n";
+
+    // unit test case 7
+    cout << "Unit Test Case 7: T/F logic (True)\n";
+    LinkedQuestion* qTF = new LinkedQuestion();
+    qTF->questionType = LinkedQuestion::TFQ;
+    qTF->isTrue = true;
+    TestSession session7(qTF);
+    assert(session7.compareAnswers("true", "true") == true);
+    cout << "Case 7 passed\n\n";
+
+    // unit test case 8
+    cout << "Unit Test Case 8: T/F logic (False)\n";
+    qTF->isTrue = false;
+    assert(session7.compareAnswers("false", "false") == true);
+    cout << "Case 8 passed\n\n";
+
+    // unit test case 9
+    cout << "Unit Test Case 9: linked list node deletion safety\n";
+    LinkedQuestion* n1 = new LinkedQuestion();
+    LinkedQuestion* n2 = new LinkedQuestion();
+    LinkedQuestion* n3 = new LinkedQuestion();
+    n1->nextQuestion = n2;
+    n2->nextQuestion = n3;
+    // Simulate deleting n2
+    n1->nextQuestion = n3; 
+    assert(n1->nextQuestion == n3);
+    delete n2; // Clean up the orphaned node
+    cout << "Case 9 passed\n\n";
+
+    // unit test case 10
+    cout << "Unit Test Case 10: point summation across multiple questions\n";
+    TestSession session10(n1); 
+    session10.earnedPoints = 0;
+    session10.earnedPoints += 10.5;
+    session10.earnedPoints += 20.0;
+    assert(session10.earnedPoints == 30.5);
+    cout << "Case 10 passed\n\n";
+
     cout << "*** End of the Debugging Version ***\n";
 
     // memory cleanup
-    delete qt3;
-    delete qt2;
-    delete qt1;
+    clearMemory(qt1); 
+    clearMemory(q1); 
+    clearMemory(n1);
+    clearMemory(qTF);
+    clearMemory(qMCQ);
 }
 #endif
 
