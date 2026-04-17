@@ -265,6 +265,13 @@ void clearMemory(LinkedQuestion* head) {
 }
 
 int main() {
+    // Debug mode
+    #ifdef UNIT_TESTING
+        runTests();
+        return 0;
+    #endif
+
+    // Normal execution
     showGreeting();
     // Configure quiz questions
     quizSetup();
@@ -401,20 +408,20 @@ void generateQuestion(){
 
     string ptsStr;
     double pts = -1;
-    while(pts < 0){
+    
+    do{
         cout << "Enter point value: ";
         getline(cin, ptsStr);
-        try
-        {
+        try{
             pts = stod(ptsStr);
+            if(pts < 0) invalidInput();
         }
-        catch(const std::exception& e)
-        {
+        catch(...){
             invalidInput();
             pts = -1;
         }
-        if(pts < 0)invalidInput();
-    }
+    }while (pts < 0);
+    
     q->pointValue = pts;
 
     cout << "Question saved.\n\n";
@@ -446,7 +453,7 @@ void editQuestion(){
     do{
         cout << "Type a number to edit [1-" << numQuestions << "] or type 'quit()' to exit: ";
         getline(cin, inputStr);
-        if(inputStr == "quit()") return;
+        if(inputStr == "quit()"){ cout << endl; return;}
         try {
             input = stoi(inputStr);
             if(input < 1 || input > numQuestions) {
@@ -609,7 +616,7 @@ void deleteQuestion(){
     }
     
     int input;
-    cout << "Type a number to delete [1-" << numQuestions << "]: ";
+    cout << "\nType a number to delete [1-" << numQuestions << "]: ";
     string inputNumStr;
     getline(cin, inputNumStr);
 

@@ -49,62 +49,50 @@ struct TestSession{
         }
         else {
             testQuestion = temp;
-            processCurrentQuestion(targetNum);
         }
     }
-    void processCurrentQuestion(int index) {
-        if (testQuestion->isAnswered) {
-            cout << "Question " << index << ": " << testQuestion->questionContent << endl;
-            cout << "You answered: " << testQuestion->studentAnswer << endl;
-                
-            cout << "\nDo you want to?\n";
-            cout << "1. Edit this answer.\n";
-            cout << "2. Go to next question\n";
-            cout << "3. Jump to question.\n";
-            cout << "4. Submit.\n";
-            cout << "Select an action: ";
-            string action;
-            getline(cin, action);
-
-            if (action == "1") {
-                askForNewAnswer();
-            }
-            else if (action == "2") {
-                moveToNextUnanswered();
-            }
-            else if (action == "3") {
-                handleJumpInput();
-            }
-            else if (action == "4") {
-                attemptSubmit();
+    void processCurrentQuestion(int index) {       
+        cout << "\n=== Question " << index << ": " << testQuestion->questionContent << " ===\n";
+        if (testQuestion->questionType == LinkedQuestion::MCQ) {
+            LinkedQuestion::LinkedAnswer* ans = testQuestion->firstAnswer;
+            while (ans != nullptr) {
+                cout << "  " << ans->letter << ". " << ans->answerContent << endl;
+                ans = ans->nextChoice;
             }
         }
-        else {
-            cout << "\nQuestion " << index << ": " << testQuestion->questionContent << endl;
-            if (testQuestion->questionType == LinkedQuestion::MCQ) {
-                LinkedQuestion::LinkedAnswer* ans = testQuestion->firstAnswer;
-                while (ans != nullptr) {
-                    cout << "  " << ans->letter << ". " << ans->answerContent << endl;
-                    ans = ans->nextChoice;
-                }
-            }
-            askForNewAnswer();
-        }
+        askForNewAnswer();
     }
     void askForNewAnswer() {
-        cout << "Your answer: ";
-        getline(cin, testQuestion->studentAnswer);
-        testQuestion->isAnswered = true;
-        moveToNextUnanswered();
+        if(testQuestion->questionType == LinkedQuestion::MCQ){
+            char answer = getMCQAnswer();
+            testQuestion->studentAnswer = string(1, answer);
+            testQuestion->isAnswered = true;
+        }
+        else if(testQuestion->questionType == LinkedQuestion::TFQ){
+            bool answer = getTFAnswer();
+            testQuestion->studentAnswer = answer ? "true" : "false";
+            testQuestion->isAnswered = true;
+        } else if(testQuestion->questionType == LinkedQuestion::WRQ){
+            string answer = getWRAnswer();
+            testQuestion->studentAnswer = answer;
+            testQuestion->isAnswered = true;
+        }
+        cout << "\n================================\n";
     }
-    void attemptSubmit() {
-        // warning logic for Phase 2
+
+    bool checkIfFinished(){
         bool unfinished = false;
         LinkedQuestion* temp = head;
         while (temp != nullptr) {
             if (!temp->isAnswered) unfinished = true;
             temp = temp->nextQuestion;
         }
+        return !unfinished;
+
+    }
+    void attemptSubmit() {
+        // warning logic for Phase 2
+        bool unfinished = !checkIfFinished();
 
         if (unfinished) {
             cout << "\n[WARNING]: You have unanswered questions. Submit anyway? (y/n): ";
@@ -134,7 +122,7 @@ struct TestSession{
             }
             search = search->nextQuestion;
         }
-        cout << "[All questions answered! Select 'Submit' to finish.]\n";
+        cout << "\n[All questions answered! Select 'Submit' to finish.]\n";
     }
     void handleJumpInput() {
         cout << "Jump to question [1-" << totalQuestions << "]: "; // Dynamically calculate max in production
@@ -184,6 +172,19 @@ struct TestSession{
         return true;
     }
 
+    int getCurrentQuestionIndex() {
+        LinkedQuestion* temp = head;
+        int index = 1;
+        while (temp != nullptr) {
+            if (temp == testQuestion) {
+                return index;
+            }
+            temp = temp->nextQuestion;
+            index++;
+        }
+        return -1; // Should never happen if testQuestion is always valid
+    }
+    
     char getMCQAnswer(){
         char result;
         while(true){
@@ -224,6 +225,7 @@ struct TestSession{
         return result;
     }
 
+    
     string getWRAnswer(){
         string result;
         // should answers be case sensitive? They are by default
@@ -231,7 +233,7 @@ struct TestSession{
         getline(cin, result);
         return result;
     }
-
+/*
     // Returns true if guessed correctly.
     bool askQuestion(){
         cout << "\nQuestion " << totalQuestions << ": " << testQuestion->questionContent << "\n";
@@ -274,7 +276,7 @@ struct TestSession{
             }
         }
         return isCorrect;
-    }
+    }*/
 
     void startQuiz() {
         if (head == nullptr) {
@@ -283,15 +285,54 @@ struct TestSession{
         }
 
         while (!isFinished) {
-            // Find the current index of testQuestion for display
-            LinkedQuestion* finder = head;
-            int currentIdx = 1;
-            while (finder != testQuestion && finder != nullptr) {
-                finder = finder->nextQuestion;
-                currentIdx++;
+            if (testQuestion->isAnswered) {
+                cout << "\n=== Question " << getCurrentQuestionIndex() << ": " << testQuestion->questionContent << " ===\n";
+                cout << "You answered: " << testQuestion->studentAnswer << endl;
+
+                cout << "\nDo you want to?\n";
+                cout << "1. Edit this answer.\n";
+                cout << "2. Go to next question\n";
+                cout << "3. Jump to question.\n";
+                cout << "4. Submit.\n";
+                cout << "Select an action: ";
+                string action;
+                getline(cin, action);
+
+                if (action == "1") {
+                    askForNewAnswer();
+                }
+                else if (action == "2") {
+                    moveToNextUnanswered();
+                    if(!checkIfFinished())processCurrentQuestion(getCurrentQuestionIndex());
+                }
+                else if (action == "3") {
+                    handleJumpInput();
+                }
+                else if (action == "4") {
+                    attemptSubmit();
+                }
+            } 
+            else {
+                cout << "\nDo you want to?\n";
+                cout << "\t1. Go to next question\n";
+                cout << "\t2. Jump to question.\n";
+                cout << "\t3. Submit.\n";
+                cout << "Select an action: ";
+                string action;
+                getline(cin, action);
+
+                if (action == "1") {
+                    processCurrentQuestion(getCurrentQuestionIndex());
+                }
+                else if (action == "2") {
+                    handleJumpInput();
+                }
+                else if (action == "3") {
+                    attemptSubmit();
+                }
+            //            int currentIdx = getCurrentQuestionIndex();
             }
-            processCurrentQuestion(currentIdx);
         }
         printSessionResults();
-    }
+    };
 };
