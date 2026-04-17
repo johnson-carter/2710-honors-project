@@ -7,7 +7,7 @@ struct LinkedQuestion{
         char letter;
         std::string answerContent;
         bool correctAnswer;
-        LinkedAnswer *prevChoice = nullptr;
+        LinkedAnswer *nextChoice = nullptr;
     };
     bool isTrue;
     std::string targetWord;
