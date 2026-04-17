@@ -1,3 +1,6 @@
+#include <iostream>
+#include <string>
+#include <assert.h>
 #include "LinkedQuestion.h"
 
 using namespace std;
@@ -11,6 +14,7 @@ struct TestSession{
     double earnedPoints;
     int totalQuestions;
     int correctQuestions;
+    bool isFinished;
 
     TestSession(LinkedQuestion* q){
         head = q;
@@ -19,6 +23,15 @@ struct TestSession{
         earnedPoints = 0;
         totalQuestions = 0;
         correctQuestions = 0;
+        isFinished = false;
+
+        // traverse to initialize total stats
+        LinkedQuestion* temp = head;
+        while (temp != nullptr) {
+            totalQuestions++;
+            totalPoints += temp->pointValue;
+            temp = temp->nextQuestion;
+        }
     }
 
     // logic for Phase 2 "Jump to Question"
@@ -62,9 +75,19 @@ struct TestSession{
             else if (action == "3") {
                 handleJumpInput();
             }
+            else if (action == "4") {
+                attemptSubmit();
+            }
         }
         else {
             cout << "\nQuestion " << index << ": " << testQuestion->questionContent << endl;
+            if (testQuestion->questionType == LinkedQuestion::MCQ) {
+                LinkedQuestion::LinkedAnswer* ans = testQuestion->firstAnswer;
+                while (ans != nullptr) {
+                    cout << "  " << ans->letter << ". " << ans->answerContent << endl;
+                    ans = ans->nextChoice;
+                }
+            }
             askForNewAnswer();
         }
     }
@@ -72,6 +95,25 @@ struct TestSession{
         cout << "Your answer: ";
         getline(cin, testQuestion->studentAnswer);
         testQuestion->isAnswered = true;
+        moveToNextUnanswered();
+    }
+    void attemptSubmit() {
+        // warning logic for Phase 2
+        bool unfinished = false;
+        LinkedQuestion* temp = head;
+        while (temp != nullptr) {
+            if (!temp->isAnswered) unfinished = true;
+            temp = temp->nextQuestion;
+        }
+
+        if (unfinished) {
+            cout << "\n[WARNING]: You have unanswered questions. Submit anyway? (y/n): ";
+            string confirm;
+            getline(cin, confirm);
+            if (confirm == "y" || confirm == "Y") isFinished = true;
+        } else {
+            isFinished = true;
+        }
     }
     void moveToNextUnanswered() {
         LinkedQuestion* search = testQuestion->nextQuestion;
@@ -95,7 +137,7 @@ struct TestSession{
         cout << "[All questions answered! Select 'Submit' to finish.]\n";
     }
     void handleJumpInput() {
-        cout << "Jump to question [1-4]: "; // Dynamically calculate max in production
+        cout << "Jump to question [1-" << totalQuestions << "]: "; // Dynamically calculate max in production
         string input;
         getline(cin, input);
         try {
@@ -105,6 +147,10 @@ struct TestSession{
         }
     }
     void printSessionResults() {
+        // reset stats here to ensure clean calculation
+        earnedPoints = 0;
+        correctQuestions = 0;
+        
         cout << "\n=== SESSION LOG ===\n";
         LinkedQuestion* curr = head;
         int count = 1;
@@ -160,6 +206,11 @@ struct TestSession{
             string resultStr;
             cout << "Your answer [true/false]: ";
             getline(cin, resultStr);
+
+            for (int i = 0; i < resultStr.length(); i++) {
+                resultStr[i] = tolower(resultStr[i]);
+            }
+            
             if(resultStr == "true"){
                 result = true;
                 break;
@@ -231,19 +282,16 @@ struct TestSession{
             return;
         }
 
-        int currentIdx = 1;
         while (!isFinished) {
             // Find the current index of testQuestion for display
             LinkedQuestion* finder = head;
-            currentIdx = 1;
+            int currentIdx = 1;
             while (finder != testQuestion && finder != nullptr) {
                 finder = finder->nextQuestion;
                 currentIdx++;
             }
-
             processCurrentQuestion(currentIdx);
         }
-
         printSessionResults();
     }
 };
