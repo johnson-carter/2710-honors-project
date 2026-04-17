@@ -224,6 +224,16 @@ void runTests() {
     assert(session10.earnedPoints == 30.5);
     cout << "Case 10 passed\n\n";
 
+    // unit test case 11
+    cout << "Unit Test Case 11: editing question content\n";
+    LinkedQuestion* qEdit = new LinkedQuestion();
+    qEdit->questionContent = "Old Question";
+    
+    qEdit->questionContent = "New Question";
+    
+    assert(qEdit->questionContent == "New Question");
+    cout << "Case 11 passed\n\n";
+
     cout << "*** End of the Debugging Version ***\n";
 
     // memory cleanup
@@ -232,6 +242,7 @@ void runTests() {
     clearMemory(n1);
     clearMemory(qTF);
     clearMemory(qMCQ);
+    clearMemory(qEdit);
 }
 #endif
 
