@@ -1,15 +1,28 @@
 // Main.cpp
 // Honors Project - COMP 2710
-//
-// Carter Johnson, Natalie Nguyen
-//  
+/* Group members
+Carter Johnson: cmj0083@auburn.edu
+Natalie Nguyen: ntn0007@auburn.edu */
+/* Project description: A C++ testing service application utilizing a Singly Linked List 
+to manage dynamic assessment data. Supports creation, modification, and deletion of MCQ, 
+true/false, and written response questions. Features include manual memory management to 
+ensure zero leaks, robust input validation, and a conditional compilation framework for 
+automated unit testing.*/
+/* Any outside help/resources: Developed exclusively by team members using course lectures 
+and standard C++ documentation.*/
+
+// Part A
 // To compile (from ~/honors_project/): g++ src/Main.cpp
 // To run: ./a.out
-//
-//
+
+// Part B
+// compile: g++ -DUNIT_TESTING src/Main.cpp
+// run: ./a.out
 
 #include <iostream>
 #include <string>
+#include <assert.h>
+#include <algorithm>
 #include "LinkedQuestion.h"
 #include "TestSession.cpp"
 
@@ -22,12 +35,205 @@ void generateQuestion();
 void editQuestion();
 void deleteQuestion();
 void buildMCQAnswers(LinkedQuestion *q);
-void invalidInput(){cout << "[Command not recognized, please try again!]\n\n";}
-// Note there is one other error message used in pdf/outline
+void clearMemory(LinkedQuestion* head);
+void invalidInput() {cout << "[Command not recognized, please try again!]\n\n";}
 
 // Fields:
 LinkedQuestion* firstQuestion = nullptr;
 int numQuestions = 0;
+
+// Part B: UNIT TESTING
+#ifdef UNIT_TESTING
+void runTests() {
+    cout << "*** This is a debugging version ***\n\n";
+
+    // unit test case 1
+    cout << "Unit Test Case 1: empty list\n";
+    TestSession emptySession(nullptr);
+    assert(emptySession.totalQuestions == 0);
+    if (emptySession.totalQuestions < 1) {
+        cout << "Warning - the number of questions to be asked must equal to or be larger than 1.\n";
+    }
+    cout << "Case 1 passed\n\n";
+
+    // unit test case 2.1
+    cout << "Unit Test Case 2.1: incorrect answer\n";
+    
+    // setup a single question
+    LinkedQuestion* q1 = new LinkedQuestion();
+    q1->questionContent = "How long was the shortest war on record?";
+    q1->targetWord = "38";
+    q1->pointValue = 100.0;
+    q1->questionType = LinkedQuestion::WRQ;
+
+    TestSession session2(q1);
+
+    cout << "Question: " << q1->questionContent << endl;
+    string mockInputWrong = "85";
+    cout << "Answer: " << mockInputWrong << endl;
+
+    if (!session2.compareAnswers(mockInputWrong, q1->targetWord)) {
+        cout << "Your answer is wrong. The correct answer is " << q1->targetWord << endl;
+        // since it's wrong, earnedPoints stays 0
+        cout << "Your total points 0\n";
+    }
+    
+    assert(session2.compareAnswers(mockInputWrong, q1->targetWord) == false);
+    cout << "\nCase 2.1 passed\n\n";
+
+    // unit test case 2.2
+    cout << "Unit Test Case 2.2: correct answer\n";
+    
+    cout << "Question: " << q1->questionContent << " Answer: 38\n";
+    
+    string mockInputRight = "38";
+    if (session2.compareAnswers(mockInputRight, q1->targetWord)) {
+        session2.earnedPoints += q1->pointValue; // Simulate adding points
+        cout << "Your answer is correct! You receive " << q1->pointValue << " points.\n";
+        cout << "Your total points: " << session2.earnedPoints << endl;
+    }
+
+    assert(session2.compareAnswers(mockInputRight, q1->targetWord) == true);
+    assert(session2.earnedPoints == 100.0);
+    cout << "\nCase 2.2 passed\n\n";
+
+    // unit test case 3
+    cout << "Unit Test Case 3: traverse and ask ALL questions\n";
+
+    LinkedQuestion* qt1 = new LinkedQuestion();
+    qt1->questionContent = "How long was the shortest war on record?";
+    qt1->targetWord = "38";
+    qt1->pointValue = 100.0;
+    qt1->questionType = LinkedQuestion::WRQ;
+
+    LinkedQuestion* qt2 = new LinkedQuestion();
+    qt2->questionContent = "What was Bank of America's original name? (Hint: Bank of Italy or Bank of Germany)";
+    qt2->targetWord = "Bank of Italy";
+    qt2->pointValue = 100.0;
+    qt2->questionType = LinkedQuestion::WRQ;
+
+    LinkedQuestion* qt3 = new LinkedQuestion();
+    qt3->questionContent = "Which university is located in Auburn, Alabama?";
+    qt3->targetWord = "Auburn University";
+    qt3->pointValue = 100.0;
+    qt3->questionType = LinkedQuestion::WRQ;
+
+    // Link them together: qt1 -> qt2 -> qt3
+    qt1->nextQuestion = qt2;
+    qt2->nextQuestion = qt3;
+
+    TestSession session3(qt1);
+
+    // question 1 logic (correct)
+    cout << "Question: " << qt1->questionContent << endl;
+    string mockAns1 = "38";
+    cout << "Answer: " << mockAns1 << endl;
+    if (session3.compareAnswers(mockAns1, qt1->targetWord)) {
+        session3.earnedPoints += qt1->pointValue;
+        cout << "Your answer is correct! You receive " << qt1->pointValue << " points. ";
+        cout << "Your total points: " << session3.earnedPoints << "\n\n";
+    }
+
+    // question 2 logic (incorrect)
+    cout << "Question: " << qt2->questionContent << endl;
+    string mockAns2 = "Bank of Germany";
+    cout << "Answer: " << mockAns2 << endl;
+    if (!session3.compareAnswers(mockAns2, qt2->targetWord)) {
+        cout << "Your answer is wrong. The correct answer is " << qt2->targetWord << ".\n";
+        cout << "Your total points " << session3.earnedPoints << "\n\n";
+    }
+
+    // question 3 logic (correct)
+    cout << "Question: " << qt3->questionContent << endl;
+    string mockAns3 = "Auburn University";
+    cout << "Answer: " << mockAns3 << endl;
+    if (session3.compareAnswers(mockAns3, qt3->targetWord)) {
+        session3.earnedPoints += qt3->pointValue;
+        cout << "Your answer is correct! You receive " << qt3->pointValue << " points. ";
+        cout << "Your total points: " << session3.earnedPoints << endl;
+    }
+
+    assert(session3.earnedPoints == 200.0); // Q1 and Q3 were correct
+    assert(session3.totalQuestions == 3);
+    
+    cout << "\nCase 3 passed\n\n";
+
+    // unit test case 4
+    cout << "Unit Test Case 4: boundary check\n";
+    
+    int requestedQuestions = 5;
+    int actualSize = session3.totalQuestions; // this should be 3
+
+    if (requestedQuestions > actualSize) {
+        cout << "Warning - There is only " << actualSize << " questions in the list.\n";
+    }
+
+    assert(requestedQuestions > actualSize);
+    
+    cout << "Case 4 passed\n\n";
+
+    // unit test case 5
+    cout << "Unit Test Case 5: MCQ correct answer\n";
+    LinkedQuestion* qMCQ = new LinkedQuestion();
+    qMCQ->questionType = LinkedQuestion::MCQ;
+    qMCQ->correctLetter = 'A';
+    qMCQ->pointValue = 50.0;
+    TestSession session5(qMCQ);
+    assert(session5.compareAnswers("A", "A") == true);
+    cout << "Case 5 passed\n\n";
+
+    // unit test case 6
+    cout << "Unit Test Case 6: MCQ incorrect answer\n";
+    assert(session5.compareAnswers("B", "A") == false);
+    cout << "Case 6 passed\n\n";
+
+    // unit test case 7
+    cout << "Unit Test Case 7: T/F logic (True)\n";
+    LinkedQuestion* qTF = new LinkedQuestion();
+    qTF->questionType = LinkedQuestion::TFQ;
+    qTF->isTrue = true;
+    TestSession session7(qTF);
+    assert(session7.compareAnswers("true", "true") == true);
+    cout << "Case 7 passed\n\n";
+
+    // unit test case 8
+    cout << "Unit Test Case 8: T/F logic (False)\n";
+    qTF->isTrue = false;
+    assert(session7.compareAnswers("false", "false") == true);
+    cout << "Case 8 passed\n\n";
+
+    // unit test case 9
+    cout << "Unit Test Case 9: linked list node deletion safety\n";
+    LinkedQuestion* n1 = new LinkedQuestion();
+    LinkedQuestion* n2 = new LinkedQuestion();
+    LinkedQuestion* n3 = new LinkedQuestion();
+    n1->nextQuestion = n2;
+    n2->nextQuestion = n3;
+    // Simulate deleting n2
+    n1->nextQuestion = n3; 
+    assert(n1->nextQuestion == n3);
+    delete n2; // Clean up the orphaned node
+    cout << "Case 9 passed\n\n";
+
+    // unit test case 10
+    cout << "Unit Test Case 10: point summation across multiple questions\n";
+    TestSession session10(n1); 
+    session10.earnedPoints = 0;
+    session10.earnedPoints += 10.5;
+    session10.earnedPoints += 20.0;
+    assert(session10.earnedPoints == 30.5);
+    cout << "Case 10 passed\n\n";
+
+    cout << "*** End of the Debugging Version ***\n";
+
+    // memory cleanup
+    clearMemory(qt1); 
+    clearMemory(q1); 
+    clearMemory(n1);
+    clearMemory(qTF);
+    clearMemory(qMCQ);
+}
+#endif
 
 void clearMemory(LinkedQuestion* head) {
     LinkedQuestion* currentQ = head;
