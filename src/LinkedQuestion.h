@@ -53,6 +53,7 @@ struct LinkedQuestion {
         int label = 0;
         std::cout << "\t" << ++label << " Type: " << getTypeString() << std::endl;
         std::cout << "\t" << ++label << " Question: " << questionContent << std::endl;
+        std::cout << "\t" << ++label << " Point Value: " << pointValue << std::endl;
         if(questionType == MCQ){
             std::cout << "\t" << ++label << " Answer Choices: " << std::endl;
             LinkedAnswer* current = firstAnswer;
@@ -68,7 +69,17 @@ struct LinkedQuestion {
         else if(questionType == WRQ){
             std::cout << "\t" << ++label << " Correct Answer: " << targetWord << std::endl;
         }    
-        std::cout << "\t" << ++label << " Point Value: " << pointValue << std::endl;
         std::cout << "=================================" << std::endl;
+    }
+
+    int getNumMCQChoices() const {
+        if(questionType != MCQ) return 0;
+        int count = 0;
+        LinkedAnswer* current = firstAnswer;
+        while(current != nullptr){
+            count++;
+            current = current->nextChoice;
+        }
+        return count;
     }
 };

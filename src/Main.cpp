@@ -442,62 +442,165 @@ void generateQuestion(){
 void editQuestion(){
     int input;
     string inputStr;
-    cout << "Type a number to edit, or type quit(): ";
-
-    while (input < 1 || input > numQuestions) {
-        invalidInput();
-        cout << "Type a number to edit, or type quit(): ";
-
-        string inputStr;
+    
+    do{
+        cout << "Type a number to edit [1-" << numQuestions << "] or type 'quit()' to exit: ";
         getline(cin, inputStr);
-
-        if (inputStr == "quit()") {
-            break;
-        }
-
+        if(inputStr == "quit()") return;
         try {
             input = stoi(inputStr);
+            if(input < 1 || input > numQuestions) {
+                invalidInput();
+            }
         } catch (...) {
-            invalidInput();
+            input = -1; // force invalid to enter loop
+        }
+    }while(input < 1 || input > numQuestions);
+
+    LinkedQuestion* qEdit = firstQuestion;
+    for(int i = 1; i < input; i++){
+        qEdit = qEdit->nextQuestion;
+    }
+    qEdit->getQuestionDetails(input);
+
+    cout << "Type a number to edit, or type 'quit()' to exit: ";
+    string editOptionStr;
+    int editOption = -1;
+    int numOptions = 4;
+    if(qEdit->questionType == LinkedQuestion::MCQ)numOptions = 5; // MCQ has an extra option to edit answer choices
+    
+    do{
+        getline(cin, editOptionStr);
+        if(editOptionStr == "quit()") return;
+        try {
+            editOption = stoi(editOptionStr);
+        } catch (...) {
+            editOption = -1; // force invalid to enter loop
+        }
+    }while(editOption < 1 || editOption > numOptions);
+
+    if(editOption == 1){
+        string newTypeStr;
+        do{
+            if(newTypeStr != "") invalidInput();
+
+            cout << "New type [mcq/tf/wr]: ";
+            getline(cin, newTypeStr);
+        }while(newTypeStr != "mcq" && newTypeStr != "tf" && newTypeStr != "wr");
+        if(newTypeStr == "mcq"){
+            qEdit->questionType = LinkedQuestion::MCQ;
+            buildMCQAnswers(qEdit);
+        }
+        else if(newTypeStr == "tf"){
+            qEdit->questionType = LinkedQuestion::TFQ;
+            cout << "Select correct answer: ";
+            string tOrF;
+            do{
+                getline(cin, tOrF);
+                if(tOrF == "true"){
+                    qEdit->isTrue = true;
+                } else if(tOrF == "false"){
+                    qEdit->isTrue = false;
+                } else {
+                    invalidInput();
+                    cout << "Select correct answer: ";
+                }
+            }while(tOrF != "true" && tOrF != "false");
+        }
+        else if(newTypeStr == "wr"){
+            qEdit->questionType = LinkedQuestion::WRQ;
+            string qAns;
+            cout << "Select correct answer: ";
+            getline(cin, qAns);
+            qEdit->targetWord = qAns;
+        }
+    } else if(editOption == 2){
+        string newContent;
+        do{
+            cout << "Enter new question content: ";
+            getline(cin, newContent);
+        }while(newContent == "");
+
+        qEdit->questionContent = newContent;
+    } else if(editOption == 3){
+        string ptsStr;
+        double pts = -1;
+        do{
+            cout << "Enter new point value: ";
+            getline(cin, ptsStr);
+            try{
+                pts = stod(ptsStr);
+            }
+            catch(...){
+                invalidInput();
+                pts = -1;
+            }
+        }while (pts < 0);
+        
+        qEdit->pointValue = pts;
+    } else if(editOption == 4 && qEdit->questionType == LinkedQuestion::MCQ){
+        buildMCQAnswers(qEdit);
+    } else if(editOption == 4){
+        if(qEdit->questionType == LinkedQuestion::MCQ){
+            qEdit->firstAnswer = nullptr;
+            buildMCQAnswers(qEdit);
+        } else {
+            string newAns;
+            bool newAnsFound = false;
+            do{
+                cout << "Enter new correct answer: ";
+                getline(cin, newAns);
+
+                if(newAns == "") {
+                    invalidInput();
+                } else if(qEdit->questionType == LinkedQuestion::TFQ){
+                    if(newAns == "true"){
+                        qEdit->isTrue = true;
+                        newAnsFound = true;
+                    } else if(newAns == "false"){
+                        qEdit->isTrue = false;
+                        newAnsFound = true;
+                    } else {
+                        invalidInput();
+                    }
+                } else {
+                    qEdit->targetWord = newAns;
+                    newAnsFound = true;
+                }
+            }while(!newAnsFound);
+        }
+        // Depends on MCQ/TF&WR
+    } else if(editOption == 5){
+        if(numOptions == 5){
+            string newAns;
+            bool validInput = false;
+            int numAnswerChoices = qEdit->getNumMCQChoices();
+
+            do{
+                cout << "Enter new correct answer choice: ";
+                getline(cin, newAns);
+
+                if(newAns.length() != 1 || toupper(newAns[0]) < 'A' || toupper(newAns[0]) >= 'A' + numAnswerChoices - 1){
+                    invalidInput();
+                }else {
+                    validInput = true;
+                    char letter = toupper(newAns[0]);
+                    LinkedQuestion::LinkedAnswer* temp = qEdit->firstAnswer;
+                
+                    while(temp != nullptr){
+                        if(temp->letter == letter){
+                            temp->correctAnswer = true;
+                            qEdit->correctLetter = letter;
+                        } else {
+                            temp->correctAnswer = false;
+                        }
+                        temp = temp->nextChoice;
+                    }
+                }
+            }while(!validInput);
         }
     }
-    
-    LinkedQuestion *qTarget = firstQuestion;
-    for(int i = 1; i < input; ++i){
-        qTarget = qTarget->nextQuestion;
-    }
 
-    cout << "=======================\n";
-    cout << "=== Q" << input << " Saved Values ===\n";
-    cout << "=======================\n";
-    cout << "1. Type: " << qTarget->getTypeString() << endl;
-    cout << "2. Question: " << qTarget->questionContent << endl;
-    int nextLabel = 3;
-    //
-    // Alternate idea : add a getCorrectAnswer() function to linkedQuestion to simplify this logic.
-    //
-    if(qTarget->questionType == LinkedQuestion::MCQ){
-        cout << nextLabel << ". Answer Choices: \n";
-        ++nextLabel;
-        LinkedQuestion::LinkedAnswer *ansChoices = qTarget->firstAnswer;
-        char targetChar = ' ';
-        while(ansChoices != nullptr){
-            cout << "\t" << ansChoices->letter << ". " << ansChoices->answerContent << endl;
-            if(ansChoices->correctAnswer == true) targetChar = ansChoices->letter;
-            ansChoices = ansChoices->nextChoice;
-        }    
-        ++nextLabel;
-        cout << nextLabel << ". Correct Answer: " << targetChar;
-    } else if(qTarget->questionType == LinkedQuestion::TFQ){
-        cout << nextLabel << ". Correct Answer: " << qTarget->isTrue;
-    } else{
-        cout << nextLabel << ". Correct Answer: " <<  qTarget->targetWord;
-    }
-    ++nextLabel;
-    cout << endl << nextLabel << ". Point Value: " << qTarget->pointValue;
-    cout << endl << endl;
-    // ADD LOGIC TO EDIT QUESTION PROPERTIES HERE
-    
 }
 void deleteQuestion(){
     if (numQuestions == 0) {
